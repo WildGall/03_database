@@ -1,8 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace _03__database
 {
@@ -13,16 +10,17 @@ namespace _03__database
             const int AddPlayer = 1;
             const int RemovePlayer = 2;
             const int BanPlayer = 3;
-            const int UnBanPlayer = 4;
-            const int DrowBase = 5;
+            const int UnbanPlayer = 4;
+            const int ShowBase = 5;
             const int ExitProgram = 6;
+
             bool isProgramWork = true;
             DataBase dataBase = new DataBase();
 
             while (isProgramWork)
             {
                 Console.WriteLine("Меню:");
-                Console.WriteLine($" {AddPlayer} - Добвить игрока.\n {RemovePlayer} - Удалить игрока.\n {BanPlayer} - Забанить Игрока.\n {UnBanPlayer} - Разбанить Игрока.\n {DrowBase} - Вывод игроков.\n {ExitProgram} - Выход из программы.");
+                Console.WriteLine($" {AddPlayer} - Добвить игрока.\n {RemovePlayer} - Удалить игрока.\n {BanPlayer} - Забанить Игрока.\n {UnbanPlayer} - Разбанить Игрока.\n {ShowBase} - Вывод игроков.\n {ExitProgram} - Выход из программы.");
                 Console.Write("\nВведите номер команды: ");
                 int.TryParse(Console.ReadLine(), out int userInput);
 
@@ -31,18 +29,23 @@ namespace _03__database
                     case AddPlayer:
                         dataBase.AddPlayer();
                         break;
+
                     case RemovePlayer:
                         dataBase.RemovePlayer();
                         break;
+
                     case BanPlayer:
                         dataBase.BanPlayer();
                         break;
-                    case UnBanPlayer:
-                        dataBase.UnBanPlayer();
+
+                    case UnbanPlayer:
+                        dataBase.UnbanPlayer();
                         break;
-                    case DrowBase:
-                        dataBase.DrowBase();
+
+                    case ShowBase:
+                        dataBase.ShowBase();
                         break;
+
                     case ExitProgram:
                         isProgramWork = false;
                         break;
@@ -55,7 +58,7 @@ namespace _03__database
     {
         private string _nick;
         private int _level;
-        private bool _flag;
+        private bool _isBanned;
         private int _uniqueNumber;
 
         public Player(int uniqueNumber,string nick, int level, bool flag = false)
@@ -63,17 +66,18 @@ namespace _03__database
             _uniqueNumber = uniqueNumber;
             _nick = nick;
             _level = level;
-            _flag = flag;
+            _isBanned = flag;
         }
 
         public void ShowInfo()
         {
             Console.WriteLine($"Уникальный номер - {_uniqueNumber} Никнейм - {_nick} Уровень - {_level}");
-            if (_flag == true)
+
+            if (_isBanned == true)
             {
                 Console.WriteLine("Игрок забанен: да\n");
             }
-            else if (_flag == false)
+            else if (_isBanned == false)
             {
                 Console.WriteLine("Игрок забанен: нет\n");
             }
@@ -81,18 +85,18 @@ namespace _03__database
 
         public void Ban()
         {
-            if (_flag != true)
+            if (_isBanned != true)
             {
-                _flag = true;
+                _isBanned = true;
                 ShowInfo();
             }
         }
 
-        public void UnBan()
+        public void Unban()
         {
-            if (_flag != false)
+            if (_isBanned != false)
             {
-                _flag = false;
+                _isBanned = false;
                 ShowInfo();
             }
         }
@@ -120,79 +124,59 @@ namespace _03__database
             Console.Clear();
         }
 
+        private bool TryGetPlayer(out Player player)
+        {
+            if (_players.Count >= 0)
+            {
+                Console.Write("Введите номер игрока:");
+                int.TryParse(Console.ReadLine(), out int uniqueNumber);
+                player = _players[uniqueNumber - 1];
+                return true;
+            }
+            else
+            {
+                Console.Write("Нет игроков в базе");
+                player = null;
+                return false;
+            }                      
+        }               
+
         public void RemovePlayer()
         {
-            if (_players.Count >= 0)
-            {              
-                Console.Write("Введите номер игрока, котрого хотите удалить:");
-                int.TryParse(Console.ReadLine(), out int uniqueNumber);
-
-                if (uniqueNumber > 0)
-                {
-                    _players.RemoveAt(uniqueNumber - 1);
-                    Console.Write("Игрок удален");
-                    Console.ReadKey();
-                    Console.Clear();
-                }
-
-                else
-                {
-                    Console.Write("Неверный номер игрока!");
-                }
-            }
+            TryGetPlayer(out Player player);
+            _players.Remove(player);
+            Console.Write("Игрок удален");
+            Console.ReadKey();
+            Console.Clear();
         }
-
+       
         public void BanPlayer()
         {
-            if (_players.Count >= 0)
+            TryGetPlayer(out Player player);
+
+            for (int i = 0; i < _players.Count; i++)
             {
-                Console.Write("Введите номер игрока, котрого хотите забанить:");
-                int.TryParse(Console.ReadLine(), out int uniqueNumber);
-
-                if (uniqueNumber > 0)
-                {
-                    for (int i = 0; i < _players.Count; i++)
-                    {
-                        _players[uniqueNumber - 1].Ban();
-                    }
-                    Console.Write("Игрок забанен");
-                    Console.ReadKey();
-                    Console.Clear();
-                }
-
-                else
-                {
-                    Console.Write("Неверный номер игрока!");
-                }
+                player.Ban();                
             }
+            Console.Write("Игрок забанен");
+            Console.ReadKey();
+            Console.Clear();            
         }
 
-        public void UnBanPlayer()
+        public void UnbanPlayer()
         {
-            if (_players.Count >= 0)
+            TryGetPlayer(out Player player);
+
+            for (int i = 0; i < _players.Count; i++)
             {
-                Console.Write("Введите номер игрока, котрого хотите разбанить:");
-                int.TryParse(Console.ReadLine(), out int uniqueNumber);
-
-                if (uniqueNumber >= 0)
-                {
-                    for (int i = 0; i < _players.Count; i++)
-                    {
-                        _players[uniqueNumber - 1].UnBan();
-                    }
-                    Console.Write("Игрок разбанен");
-                    Console.ReadKey();
-                    Console.Clear();
-                }
-
-                else
-                {
-                    Console.Write("Неверный номер игрока!");
-                }
-            }                
+                player.Unban();
+            }
+            Console.Write("Игрок разбанен");
+            Console.ReadKey();
+            Console.Clear();                           
         }
 
-        public void DrowBase()
+        public void ShowBase()
         {
             if (_players.Count > 0)
             {
@@ -201,7 +185,6 @@ namespace _03__database
                     _players[i].ShowInfo();
                 }
             }
-
             else
             {
                 Console.WriteLine("Данные Отсутвуют");
